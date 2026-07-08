@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { retrieveForClient, retrieveLearningLessons, computeConfidence } from "@/lib/retrieval";
-import { buildClientSystemPrompt, formatRetrievedForClient, formatLearningLessonsForClient } from "@/lib/prompt";
+import { retrieveForClient, retrieveLearningLessons, retrieveUrls, computeConfidence } from "@/lib/retrieval";
+import { buildClientSystemPrompt, formatRetrievedForClient, formatLearningLessonsForClient, formatUrlRegistry } from "@/lib/prompt";
 import { stripJiraRefs } from "@/lib/sanitize";
 import { handleQuestionGap } from "@/lib/gap-detection";
 
@@ -43,15 +43,17 @@ export async function POST(req: Request) {
 
   const cleanMessages = messages.map((m) => ({ role: m.role, content: stripJiraRefs(m.content) }));
 
-  const [retrieved, lessons] = await Promise.all([
+  const [retrieved, lessons, urls] = await Promise.all([
     retrieveForClient(lastUser.content, 6),
     retrieveLearningLessons(lastUser.content, 5),
+    retrieveUrls(lastUser.content, "client", 5),
   ]);
 
   const confidence = computeConfidence(retrieved);
   const context = formatRetrievedForClient(retrieved);
   const lessonText = formatLearningLessonsForClient(lessons);
-  const system = buildClientSystemPrompt(context, lessonText);
+  const urlText = formatUrlRegistry(urls);
+  const system = buildClientSystemPrompt(context, lessonText, urlText);
 
   const citations = retrieved.map((c) => ({
     title: c.title,
@@ -95,9 +97,8 @@ export async function POST(req: Request) {
 
         // Gap detection: if either signal says low confidence, flag for admin
         const isLowConfidence =
-          confidence === "low" ||
-          claudeConfidence === "low" ||
-          (confidence === "medium" && claudeConfidence === "medium");
+          (confidence === "low" && claudeConfidence !== "high") ||
+          (claudeConfidence === "low" && confidence !== "high");
 
         if (isLowConfidence) {
           const gapResult = await handleQuestionGap({

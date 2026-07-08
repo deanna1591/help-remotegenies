@@ -48,6 +48,7 @@ export default function JinniWidget() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -151,7 +152,7 @@ export default function JinniWidget() {
         <span className="text-sm font-medium">Ask Jinni</span>
       </button>
 
-      <div className={"fixed bottom-6 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[440px] h-[calc(100vh-3rem)] sm:h-[640px] max-h-[720px] bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all origin-bottom-right " + (isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none")}>
+     <div className={"fixed z-50 bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all origin-bottom-right " + (isExpanded ? "bottom-4 right-4 left-4 top-4 sm:left-auto sm:w-[900px] sm:h-[calc(100vh-2rem)]" : "bottom-6 right-6 w-[calc(100vw-3rem)] sm:w-[440px] h-[calc(100vh-3rem)] sm:h-[640px] max-h-[720px]") + " " + (isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none")}>
         <header className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-primary text-white">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-sm font-bold">J</div>
@@ -160,7 +161,7 @@ export default function JinniWidget() {
               <div className="text-xs text-white/80 leading-tight">Ask me anything</div>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+         <div className="flex items-center gap-1">
             {messages.length > 0 && (
               <button
                 onClick={clearHistory}
@@ -170,6 +171,28 @@ export default function JinniWidget() {
                 Clear
               </button>
             )}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-white/80 hover:text-white w-8 h-8 rounded-lg hover:bg-white/10 transition hidden sm:flex items-center justify-center"
+              aria-label={isExpanded ? "Minimize chat" : "Expand chat"}
+              title={isExpanded ? "Minimize" : "Expand"}
+            >
+              {isExpanded ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="4 14 10 14 10 20" />
+                  <polyline points="20 10 14 10 14 4" />
+                  <line x1="14" y1="10" x2="21" y2="3" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+              )}
+            </button>
             <button
               onClick={() => setIsOpen(false)}
               className="text-white/80 hover:text-white w-8 h-8 rounded-lg hover:bg-white/10 transition flex items-center justify-center"
@@ -284,7 +307,9 @@ function MessageBubble({
   }
 
   const gap = message.gapFlagged;
-  const wasGapFlagged = gap && (gap.action === "created" || gap.action === "incremented");
+ const hasRelatedArticles = (message.citations?.filter((c) => c.similarity > 0.5) ?? []).length > 0;
+  const hasSubstantiveAnswer = displayContent.length > 200; // meaningful response length
+  const wasGapFlagged = gap && (gap.action === "created" || gap.action === "incremented") && !hasRelatedArticles && !hasSubstantiveAnswer;
   const displayContent = stripInternalMarkers(message.content);
 
   async function submitFeedback(kind: "positive" | "negative", correctionText?: string) {

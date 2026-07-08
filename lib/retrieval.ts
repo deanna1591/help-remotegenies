@@ -87,6 +87,26 @@ export async function retrieveLearningLessons(query: string, limit = 5): Promise
   }
 }
 
+export async function retrieveUrls(query: string, audience: string = "client", limit = 5): Promise<any[]> {
+  try {
+    const embedding = await embed(query);
+    const { data, error } = await jinniPublicClient().rpc("match_urls", {
+      query_embedding: embedding,
+      match_count: limit,
+      target_audience: audience,
+      min_similarity: 0.5,
+    });
+    if (error) {
+      console.error("[retrieveUrls] error:", error);
+      return [];
+    }
+    return data ?? [];
+  } catch (e) {
+    console.error("[retrieveUrls] failed:", e);
+    return [];
+  }
+}
+
 export function computeConfidence(chunks: RetrievedChunk[]): "high" | "medium" | "low" {
   if (chunks.length === 0) return "low";
   const best = chunks[0].similarity;
