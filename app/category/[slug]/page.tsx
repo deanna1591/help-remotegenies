@@ -25,7 +25,20 @@ const CATEGORY_LABELS: Record<string, { name: string; description: string }> = {
 };
 
 function slugToId(slug: string): string {
-  return slug.toLowerCase();
+  return decodeURIComponent(slug).toLowerCase();
+}
+
+function normalizeTag(tag: string): string {
+  return tag.toLowerCase().trim();
+}
+
+function tagMatchesSlug(tag: string, slug: string): boolean {
+  const normalizedTag = normalizeTag(tag);
+  const normalizedSlug = normalizeTag(slug);
+  if (normalizedTag === normalizedSlug) return true;
+  // Handle dash/space equivalence: "task-management" matches "task management"
+  if (normalizedTag.replace(/-/g, " ") === normalizedSlug.replace(/-/g, " ")) return true;
+  return false;
 }
 
 function humanize(tag: string): string {
@@ -44,7 +57,7 @@ function preview(md: string, maxChars = 180): string {
 export default async function CategoryPage({ params }: { params: { slug: string } }) {
   const slug = slugToId(params.slug);
   const articles = await getPublishedArticles();
-  const matching = articles.filter((a) => (a.tags || []).some((t) => t.toLowerCase() === slug));
+ const matching = articles.filter((a) => (a.tags || []).some((t) => tagMatchesSlug(t, slug)));
   if (matching.length === 0) notFound();
 
   const meta = CATEGORY_LABELS[slug] ?? { name: humanize(slug), description: `${matching.length} article${matching.length !== 1 ? "s" : ""} in this topic.` };
