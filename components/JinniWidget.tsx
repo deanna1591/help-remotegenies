@@ -306,12 +306,11 @@ function MessageBubble({
     );
   }
 
+const displayContent = stripInternalMarkers(message.content);
   const gap = message.gapFlagged;
- const hasRelatedArticles = (message.citations?.filter((c) => c.similarity > 0.5) ?? []).length > 0;
-  const hasSubstantiveAnswer = displayContent.length > 200; // meaningful response length
+  const hasRelatedArticles = (message.citations?.filter((c) => c.similarity > 0.5) ?? []).length > 0;
+  const hasSubstantiveAnswer = displayContent.length > 200;
   const wasGapFlagged = gap && (gap.action === "created" || gap.action === "incremented") && !hasRelatedArticles && !hasSubstantiveAnswer;
-  const displayContent = stripInternalMarkers(message.content);
-
   async function submitFeedback(kind: "positive" | "negative", correctionText?: string) {
     setBusy(true);
     try {
@@ -328,9 +327,34 @@ function MessageBubble({
     <div className="flex gap-2.5">
       <div className="w-8 h-8 rounded-lg bg-gradient-primary text-white flex items-center justify-center text-xs font-bold shrink-0">J</div>
       <div className="flex-1 min-w-0">
-        <div className="prose prose-sm max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1.5 prose-h2:text-base prose-h3:text-sm prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-table:text-xs prose-th:bg-gray-50 prose-th:font-semibold prose-th:px-2 prose-th:py-1.5 prose-th:border prose-th:border-gray-100 prose-td:px-2 prose-td:py-1.5 prose-td:border prose-td:border-gray-100 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[11px] prose-code:before:content-none prose-code:after:content-none prose-a:text-primary prose-blockquote:border-l-primary prose-blockquote:bg-primary-soft/40 prose-blockquote:py-1 prose-blockquote:px-3 prose-blockquote:rounded-r prose-blockquote:not-italic">
+        <div className="prose prose-sm max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1.5 prose-h2:text-base prose-h3:text-sm prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-table:text-xs prose-th:bg-gray-50 prose-th:font-semibold prose-th:px-2 prose-th:py-1.5 prose-th:border prose-th:border-gray-100 prose-td:px-2 prose-td:py-1.5 prose-td:border prose-td:border-gray-100 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[11px] prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-primary prose-blockquote:bg-primary-soft/40 prose-blockquote:py-1 prose-blockquote:px-3 prose-blockquote:rounded-r prose-blockquote:not-italic">
           {displayContent ? (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayContent}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+              a: ({ href, children, ...rest }) => {
+                  const url = href || "";
+                  const isExternal = url.startsWith("http") || url.startsWith("mailto:");
+                  return (
+                    <a
+                      href={url}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                      className="inline-flex items-center gap-1 bg-gradient-primary text-white text-[13px] font-medium px-3 py-1 rounded-full hover:opacity-95 transition no-underline my-0.5"
+                      {...rest}
+                    >
+                      <span>{children}</span>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-80">
+                        <line x1="7" y1="17" x2="17" y2="7" />
+                        <polyline points="7 7 17 7 17 17" />
+                      </svg>
+                    </a>
+                  );
+                },
+              }}
+            >
+              {displayContent}
+            </ReactMarkdown>
           ) : (
             <span className="text-ink-faint">...</span>
           )}

@@ -71,7 +71,32 @@ export default async function ArticlePage({ params }: { params: { id: string } }
             </header>
 
             <div className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-ink prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-2 prose-p:text-ink prose-p:leading-relaxed prose-a:text-primary prose-a:font-medium hover:prose-a:opacity-80 prose-strong:text-ink prose-strong:font-semibold prose-code:bg-gray-50 prose-code:text-ink prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-primary prose-blockquote:bg-primary-soft/30 prose-blockquote:not-italic prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:text-ink prose-table:text-sm prose-th:bg-gray-50 prose-th:font-semibold prose-th:px-4 prose-th:py-2 prose-th:border prose-th:border-gray-200 prose-td:px-4 prose-td:py-2 prose-td:border prose-td:border-gray-100 prose-ul:my-3 prose-ol:my-3 prose-li:my-0.5 prose-img:rounded-xl">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ href, children, ...rest }) => {
+                    const url = href || "";
+                    const isExternal = url.startsWith("http") || url.startsWith("mailto:");
+                    return (
+                      
+                        href={url}
+                        target={isExternal ? "_blank" : undefined}
+                        rel={isExternal ? "noopener noreferrer" : undefined}
+                        className="inline-flex items-center gap-1.5 bg-gradient-primary text-white text-sm font-medium px-3.5 py-1.5 rounded-full hover:opacity-95 transition no-underline my-1"
+                        {...rest}
+                      >
+                        <span>{children}</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-80">
+                          <line x1="7" y1="17" x2="17" y2="7" />
+                          <polyline points="7 7 17 7 17 17" />
+                        </svg>
+                      </a>
+                    );
+                  },
+                }}
+              >
+                {article.content}
+              </ReactMarkdown>
             </div>
           </article>
 
