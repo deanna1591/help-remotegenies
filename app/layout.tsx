@@ -26,7 +26,6 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased text-ink bg-white min-h-screen">
         {children}
-{children}
         <JinniWidget />
       </body>
     </html>
