@@ -52,9 +52,9 @@ export default async function ArticlePage({ params }: { params: { id: string } }
             </Link>
           </div>
 
-          <article className="bg-white border border-gray-100 rounded-3xl p-8 md:p-12 shadow-hero">
+         <article className="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 shadow-hero">
             <header className="mb-8 pb-8 border-b border-gray-100">
-              <h1 className="text-3xl md:text-4xl font-bold text-ink tracking-tight mb-4">{article.title || "(untitled)"}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-ink tracking-tight mb-3 sm:mb-4">{article.title || "(untitled)"}</h1>
               <div className="flex items-center gap-3 text-sm text-ink-faint">
                 <span>Updated {new Date(article.freshness_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
                 {cleanTags.length > 0 && (

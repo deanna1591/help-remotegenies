@@ -52,7 +52,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   return (
     <div className="min-h-screen bg-gradient-radial">
       <Header />
-      <section className="py-16 md:py-20">
+     <section className="py-8 sm:py-12 md:py-20">
         <div className="container-narrow animate-fade-up">
           <div className="mb-8">
             <Link href="/" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
@@ -61,7 +61,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
           </div>
           <div className="mb-10">
             <div className="w-16 h-1.5 bg-gradient-primary rounded-full mb-5" />
-            <h1 className="text-3xl md:text-5xl font-bold text-ink tracking-tight mb-3">{meta.name}</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-ink tracking-tight mb-3">{meta.name}</h1>
             <p className="text-lg text-ink-muted">{meta.description}</p>
             <p className="text-sm text-ink-faint mt-2">{matching.length} article{matching.length !== 1 ? "s" : ""}</p>
           </div>

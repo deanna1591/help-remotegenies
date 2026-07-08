@@ -78,13 +78,13 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="py-20 md:py-28">
+   <section className="py-12 sm:py-20 md:py-28">
       <div className="container-narrow text-center animate-fade-up">
         <div className="inline-flex items-center gap-2 bg-primary-soft border border-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full mb-6">
           <span className="w-1.5 h-1.5 bg-primary rounded-full" />
           24/7 answers from Jinni, our AI assistant
         </div>
-        <h1 className="text-4xl md:text-6xl font-bold text-ink mb-4 tracking-tight">How can we help?</h1>
+       <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-ink mb-3 sm:mb-4 tracking-tight">How can we help?</h1>
         <p className="text-lg text-ink-muted mb-10 max-w-xl mx-auto">Search the knowledge base or ask Jinni directly. Answers grounded in the platform, not guesswork.</p>
         <form action="/search" method="GET" className="max-w-2xl mx-auto">
           <div className="flex items-center gap-2 bg-white shadow-hero border border-gray-100 hover:border-primary/30 focus-within:border-primary/50 rounded-2xl p-2 transition">

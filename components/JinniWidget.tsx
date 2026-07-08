@@ -141,9 +141,9 @@ export default function JinniWidget() {
 
   return (
     <>
-      <button
+    <button
         onClick={() => setIsOpen(true)}
-        className={"fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-gradient-primary text-white px-5 py-3.5 rounded-2xl shadow-hero hover:shadow-lg hover:-translate-y-0.5 transition-all " + (isOpen ? "opacity-0 pointer-events-none" : "opacity-100")}
+        className={"fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 bg-gradient-primary text-white px-4 py-3 sm:px-5 sm:py-3.5 rounded-2xl shadow-hero hover:shadow-lg hover:-translate-y-0.5 transition-all " + (isOpen ? "opacity-0 pointer-events-none" : "opacity-100")}
         aria-label="Chat with Jinni"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -152,7 +152,7 @@ export default function JinniWidget() {
         <span className="text-sm font-medium">Ask Jinni</span>
       </button>
 
-     <div className={"fixed z-50 bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all origin-bottom-right " + (isExpanded ? "bottom-4 right-4 left-4 top-4 sm:left-auto sm:w-[900px] sm:h-[calc(100vh-2rem)]" : "bottom-6 right-6 w-[calc(100vw-3rem)] sm:w-[440px] h-[calc(100vh-3rem)] sm:h-[640px] max-h-[720px]") + " " + (isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none")}>
+    <div className={"fixed z-50 bg-white shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all origin-bottom-right " + (isExpanded ? "inset-0 sm:inset-auto sm:bottom-4 sm:right-4 sm:top-4 sm:w-[900px] sm:h-[calc(100vh-2rem)] rounded-none sm:rounded-3xl" : "inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[440px] sm:h-[640px] max-h-none sm:max-h-[720px] rounded-none sm:rounded-3xl") + " " + (isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none")}>
         <header className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-primary text-white">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-sm font-bold">J</div>

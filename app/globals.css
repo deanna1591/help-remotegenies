@@ -14,9 +14,14 @@
 
 @layer components {
   .container-narrow {
-    @apply max-w-4xl mx-auto px-6;
+    @apply max-w-4xl mx-auto px-4 sm:px-6;
   }
   .container-wide {
-    @apply max-w-6xl mx-auto px-6;
+    @apply max-w-6xl mx-auto px-4 sm:px-6;
+  }
+  /* Article prose tables should scroll horizontally on narrow screens rather
+     than overflow the layout */
+  .prose table {
+    @apply block sm:table w-full overflow-x-auto;
   }
 }
