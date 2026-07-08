@@ -78,7 +78,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                     const url = href || "";
                     const isExternal = url.startsWith("http") || url.startsWith("mailto:");
                     return (
-                      
+                      <a
                         href={url}
                         target={isExternal ? "_blank" : undefined}
                         rel={isExternal ? "noopener noreferrer" : undefined}
