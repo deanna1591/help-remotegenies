@@ -56,7 +56,13 @@ export default function JinniWidget() {
     setMessages(loadStoredMessages());
     setHasLoaded(true);
   }, []);
-
+  useEffect(() => {
+    function handleOpenEvent() {
+      setIsOpen(true);
+    }
+    window.addEventListener("jinni:open", handleOpenEvent);
+    return () => window.removeEventListener("jinni:open", handleOpenEvent);
+  }, []);
   useEffect(() => {
     if (hasLoaded) saveStoredMessages(messages);
   }, [messages, hasLoaded]);

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getArticleById, getPublishedArticles } from "@/lib/supabase";
+import AskJinniButton from "@/components/AskJinniButton";
 
 export const dynamic = "force-dynamic";
 
@@ -151,10 +152,7 @@ function Trending() {
         <div className="bg-surface-wash border border-primary/10 rounded-3xl p-8 md:p-12 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-ink mb-2 tracking-tight">Still stuck?</h2>
           <p className="text-ink-muted mb-6 max-w-md mx-auto">Ask Jinni — she's available 24/7 and gives sourced answers.</p>
-          <button type="button" className="inline-flex items-center gap-2 bg-gradient-primary text-white text-sm font-medium px-6 py-3 rounded-xl hover:opacity-95 transition">
-            <span>Chat with Jinni</span>
-            <span className="text-white/90">→</span>
-          </button>
+        <AskJinniButton />
         </div>
       </div>
     </section>
