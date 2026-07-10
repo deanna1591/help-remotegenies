@@ -12,20 +12,20 @@ export default function Header() {
           </span>
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
-          
-            href="https://app.remotegenies.com"
+            <a
+              href="https://app.remotegenies.com"
             className="hidden sm:inline text-sm text-ink-muted hover:text-ink transition"
           >
             Go to app
           </a>
-          
-            href="https://app.remotegenies.com/sign-in"
+            <a
+              href="https://app.remotegenies.com/sign-in"
             className="text-sm font-medium bg-white border border-gray-200 hover:border-primary hover:text-primary text-ink px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition"
           >
             Log in
           </a>
-          
-            href="https://app.remotegenies.com/register"
+            <a
+              href="https://app.remotegenies.com/register"
             className="text-sm font-medium bg-gradient-primary text-white hover:opacity-95 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition"
           >
             Sign up
