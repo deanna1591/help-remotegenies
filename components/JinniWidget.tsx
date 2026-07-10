@@ -155,7 +155,7 @@ export default function JinniWidget() {
     <div className={"fixed z-50 bg-white shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all origin-bottom-right " + (isExpanded ? "inset-0 sm:inset-auto sm:bottom-4 sm:right-4 sm:top-4 sm:w-[900px] sm:h-[calc(100vh-2rem)] rounded-none sm:rounded-3xl" : "inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-[440px] sm:h-[640px] max-h-none sm:max-h-[720px] rounded-none sm:rounded-3xl") + " " + (isOpen ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none")}>
         <header className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-primary text-white">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center text-sm font-bold">J</div>
+          <img src="/jinni-avatar.png" alt="Jinni" className="w-8 h-8 rounded-lg object-cover bg-white" />
             <div>
               <div className="text-sm font-semibold leading-tight">Jinni</div>
               <div className="text-xs text-white/80 leading-tight">Ask me anything</div>
@@ -264,7 +264,7 @@ function EmptyState({ onQuickAsk }: { onQuickAsk: (q: string) => void }) {
   ];
   return (
     <div className="h-full flex flex-col items-center justify-center text-center px-4">
-      <div className="w-14 h-14 rounded-2xl bg-gradient-primary text-white flex items-center justify-center text-xl font-bold mb-3 shadow-hero">J</div>
+     <img src="/jinni-avatar.png" alt="Jinni" className="w-14 h-14 rounded-2xl object-cover mb-3 shadow-hero" />
       <h3 className="font-semibold text-ink mb-1">Hi, I'm Jinni</h3>
       <p className="text-sm text-ink-muted mb-6 max-w-xs">Ask me anything about RemoteGenies. I answer from our knowledge base 24/7.</p>
       <div className="space-y-2 w-full max-w-xs">
@@ -325,7 +325,7 @@ const displayContent = stripInternalMarkers(message.content);
 
   return (
     <div className="flex gap-2.5">
-      <div className="w-8 h-8 rounded-lg bg-gradient-primary text-white flex items-center justify-center text-xs font-bold shrink-0">J</div>
+     <img src="/jinni-avatar.png" alt="Jinni" className="w-8 h-8 rounded-lg object-cover shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="prose prose-sm max-w-none prose-p:my-2 prose-p:leading-relaxed prose-headings:font-semibold prose-headings:mt-3 prose-headings:mb-1.5 prose-h2:text-base prose-h3:text-sm prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-table:text-xs prose-th:bg-gray-50 prose-th:font-semibold prose-th:px-2 prose-th:py-1.5 prose-th:border prose-th:border-gray-100 prose-td:px-2 prose-td:py-1.5 prose-td:border prose-td:border-gray-100 prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[11px] prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-primary prose-blockquote:bg-primary-soft/40 prose-blockquote:py-1 prose-blockquote:px-3 prose-blockquote:rounded-r prose-blockquote:not-italic">
           {displayContent ? (
