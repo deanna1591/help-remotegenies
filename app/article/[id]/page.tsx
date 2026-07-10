@@ -7,6 +7,7 @@ import { getArticleById, getPublishedArticles } from "@/lib/supabase";
 import AskJinniButton from "@/components/AskJinniButton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Trending from "@/components/Trending";
 
 export const dynamic = "force-dynamic";
 
