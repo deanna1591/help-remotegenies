@@ -3,6 +3,8 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getPublishedArticles } from "@/lib/supabase";
 import AskJinniButton from "@/components/AskJinniButton";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export const dynamic = "force-dynamic";
 
@@ -104,53 +106,3 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   );
 }
 
-function Header() {
-  return (
-    <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-40">
-      <div className="container-wide flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image src="/logo.png" alt="RemoteGenies" width={32} height={32} className="rounded-md" />
-          <span className="font-semibold text-ink">
-            RemoteGenies <span className="text-ink-muted font-normal">Help Center</span>
-          </span>
-        </Link>
-        <nav className="flex items-center gap-3">
-          <a href="https://app.remotegenies.com" className="text-sm text-ink-muted hover:text-ink transition">Go to app</a>
-          <a href="https://app.remotegenies.com/login" className="text-sm font-medium bg-white border border-gray-200 hover:border-primary hover:text-primary text-ink px-4 py-2 rounded-xl transition">Log in</a>
-        </nav>
-      </div>
-    </header>
-  );
-}
-
-function Trending() {
-  return (
-    <section className="py-16">
-      <div className="container-wide">
-        <div className="bg-surface-wash border border-primary/10 rounded-3xl p-8 md:p-12 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-ink mb-2 tracking-tight">Can&apos;t find what you need?</h2>
-          <p className="text-ink-muted mb-6 max-w-md mx-auto">Ask Jinni directly — she&apos;s available 24/7 and gives sourced answers.</p>
-        <AskJinniButton />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Footer() {
-  return (
-    <footer className="border-t border-gray-100 py-10 mt-10">
-      <div className="container-wide flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-ink-muted">
-        <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="RemoteGenies" width={20} height={20} className="rounded" />
-          <span>© {new Date().getFullYear()} RemoteGenies</span>
-        </div>
-        <nav className="flex items-center gap-6">
-          <a href="https://remotegenies.com" className="hover:text-ink transition">Home</a>
-          <a href="https://app.remotegenies.com" className="hover:text-ink transition">Platform</a>
-          <a href="mailto:support@remotegenies.com" className="hover:text-ink transition">Contact</a>
-        </nav>
-      </div>
-    </footer>
-  );
-}
