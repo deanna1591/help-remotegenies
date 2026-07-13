@@ -46,7 +46,7 @@ export async function POST(req: Request) {
   const [retrieved, lessons, urls] = await Promise.all([
     retrieveForClient(lastUser.content, 6),
     retrieveLearningLessons(lastUser.content, 5),
-    retrieveUrls(lastUser.content, "client", 5),
+    retrieveUrls(lastUser.content, null, 5),
   ]);
 
   const confidence = computeConfidence(retrieved);

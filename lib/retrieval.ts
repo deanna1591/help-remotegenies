@@ -16,10 +16,10 @@ export async function retrieveForClient(query: string, limit = 6): Promise<Retri
   const embedding = await embed(query);
   console.log("[retrieveForClient] query:", query, "embedding length:", embedding.length);
 
-  const { data, error } = await jinniPublicClient().rpc("match_knowledge", {
+ const { data, error } = await jinniPublicClient().rpc("match_knowledge", {
     query_embedding: embedding,
     query_text: query,
-    target_audience: "client",
+    target_audience: null,
     required_tags: null,
     match_count: limit * 3,
   });
@@ -87,7 +87,7 @@ export async function retrieveLearningLessons(query: string, limit = 5): Promise
   }
 }
 
-export async function retrieveUrls(query: string, audience: string = "client", limit = 5): Promise<any[]> {
+export async function retrieveUrls(query: string, audience: string | null = "client", limit = 5): Promise<any[]> {
   try {
     const embedding = await embed(query);
     const { data, error } = await jinniPublicClient().rpc("match_urls", {
