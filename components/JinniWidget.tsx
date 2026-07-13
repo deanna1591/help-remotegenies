@@ -366,17 +366,21 @@ const displayContent = stripInternalMarkers(message.content);
           )}
         </div>
 
-        {message.citations && message.citations.length > 0 && (
+       {message.citations && message.citations.filter((c) => c.similarity > 0.5).length > 0 && (
           <div className="mt-3 pt-2 border-t border-gray-100">
-            <div className="text-[10px] uppercase tracking-wider text-ink-faint font-semibold mb-1.5">Related articles</div>
-            <div className="space-y-1">
+            <div className="text-[10px] uppercase tracking-wider text-ink-faint font-semibold mb-2">Related articles</div>
+            <div className="flex flex-wrap gap-1.5">
               {message.citations.filter((c) => c.similarity > 0.5).slice(0, 3).map((c) => (
                 <Link
                   key={c.id}
                   href={c.url}
-                  className="block text-xs px-2.5 py-1.5 bg-white border border-gray-100 hover:border-primary/30 rounded-lg text-ink hover:text-primary transition truncate"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-gradient-primary text-white rounded-full hover:opacity-95 transition no-underline max-w-full"
                 >
-                  {c.title || "Article"}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 opacity-90">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <span className="truncate">{c.title || "Read article"}</span>
                 </Link>
               ))}
             </div>
