@@ -1,11 +1,8 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { embed } from "@/lib/embed";
 
 let cached: SupabaseClient | null = null;
 
-/**
- * Server-only Supabase client using the service role key.
- * Used for creating drafts from client question gaps (writes bypass RLS).
- */
 function jinniServerClient(): SupabaseClient {
   if (cached) return cached;
   const url = process.env.NEXT_PUBLIC_JINNI_SUPABASE_URL;
@@ -15,9 +12,39 @@ function jinniServerClient(): SupabaseClient {
   return cached;
 }
 
+// Inputs that should NEVER trigger gap detection — audience clarifications,
+// greetings, acknowledgements, and other non-questions.
+const TRIVIAL_INPUTS = new Set([
+  "genie", "genies", "client", "clients", "freelancer", "freelancers",
+  "hi", "hello", "hey", "yo", "sup", "hiya",
+  "thanks", "thank you", "ty", "thx", "cheers",
+  "yes", "no", "yeah", "nope", "yep", "ok", "okay", "k", "sure",
+  "bye", "goodbye", "cool", "nice", "great", "good", "got it", "gotcha",
+]);
+
 /**
- * Handle a low-confidence client question. Either creates a new draft
- * flagged for admin, or increments the "asked_count" on a similar existing draft.
+ * Decide whether a user message is a real, answerable question worth
+ * flagging as a knowledge gap. Filters out greetings, one-word replies,
+ * audience clarifications, and other non-questions.
+ */
+function isRealQuestion(raw: string): boolean {
+  const q = raw.toLowerCase().trim().replace(/[?!.]+$/, "");
+  if (!q) return false;
+  if (TRIVIAL_INPUTS.has(q)) return false;
+  const words = q.split(/\s+/).filter(Boolean);
+  // Too short to be a substantive question
+  if (words.length < 3) return false;
+  if (q.length < 12) return false;
+  return true;
+}
+
+/**
+ * Handle a low-confidence question. Before creating a draft, cross-checks:
+ *  1. Is this a real question (not "genie", "hi", etc.)?
+ *  2. Is it already answered in published knowledge_chunks?
+ *  3. Is there already a draft (pending OR approved) covering it?
+ * Only creates a new draft if all checks pass. Otherwise increments an
+ * existing draft's asked_count or skips entirely.
  */
 export async function handleQuestionGap(params: {
   question: string;
@@ -26,15 +53,48 @@ export async function handleQuestionGap(params: {
   claudeConfidence: string;
 }) {
   try {
-    const supabase = jinniServerClient();
+    // GUARD 1 — skip trivial / non-question inputs
+    if (!isRealQuestion(params.question)) {
+      return { action: "skipped", reason: "not_a_question" };
+    }
 
-    // Find existing question-gap drafts and semantic-dedupe by title overlap
+    const supabase = jinniServerClient();
+    const questionEmbedding = await embed(params.question);
+
+    // GUARD 2 — already answered in published knowledge? Cross-check via embedding.
+    const { data: existingChunks, error: chunkErr } = await supabase.rpc("match_knowledge", {
+      query_embedding: questionEmbedding,
+      query_text: params.question,
+      target_audience: null,
+      required_tags: null,
+      match_count: 3,
+    });
+    if (chunkErr) {
+      console.error("[gap] knowledge cross-check error:", chunkErr);
+    } else if (existingChunks && existingChunks.length > 0) {
+      // If a published chunk is a strong semantic match, this is already covered.
+      const top = existingChunks[0] as any;
+      const isPublishedStrongMatch = top.similarity >= 0.82;
+      if (isPublishedStrongMatch) {
+        // Verify it's actually published (RPC returns unpublished too via service role)
+        const { data: pubCheck } = await supabase
+          .from("knowledge_chunks")
+          .select("id, is_published")
+          .eq("id", top.id)
+          .single();
+        if (pubCheck?.is_published) {
+          return { action: "skipped", reason: "already_in_knowledge_base", matchedChunkId: top.id };
+        }
+      }
+    }
+
+    // GUARD 3 — already a draft (pending OR approved) covering this?
     const { data: existingDrafts, error: draftsErr } = await supabase
       .from("knowledge_drafts")
-      .select("id, proposed_title, review_notes, created_at")
+      .select("id, proposed_title, review_notes, status, created_at")
       .eq("derived_from", "client_question_gap")
-      .eq("status", "pending")
-      .limit(50);
+      .in("status", ["pending", "approved"])
+      .limit(100);
 
     if (draftsErr) {
       console.error("[gap] draft lookup error:", draftsErr);
@@ -53,6 +113,11 @@ export async function handleQuestionGap(params: {
     });
 
     if (matchingDraft) {
+      // If it's an approved draft, the article is coming — don't increment, just skip.
+      if (matchingDraft.status === "approved") {
+        return { action: "skipped", reason: "already_drafted_and_approved", draftId: matchingDraft.id };
+      }
+      // Pending draft — bump asked_count.
       const currentNotes = matchingDraft.review_notes ? safeParseJson(matchingDraft.review_notes) : {};
       const currentCount = currentNotes.asked_count ?? 1;
       const updated = {
@@ -67,7 +132,7 @@ export async function handleQuestionGap(params: {
       return { action: "incremented", draftId: matchingDraft.id, askedCount: currentCount + 1 };
     }
 
-    // Create new draft
+    // All guards passed — create a new draft.
     const metadata = {
       asked_count: 1,
       first_asked_at: new Date().toISOString(),
@@ -76,7 +141,7 @@ export async function handleQuestionGap(params: {
       claude_confidence: params.claudeConfidence,
     };
 
-    const rationale = `A client asked this question but our knowledge base didn't have a confident answer. This is a candidate for a new article. Retrieved context (may or may not be relevant):\n\n${params.retrievedContext.slice(0, 2000)}`;
+    const rationale = `A user asked this question but our knowledge base didn't have a confident answer. This is a candidate for a new article. Retrieved context (may or may not be relevant):\n\n${params.retrievedContext.slice(0, 2000)}`;
 
     const { data: newDraft, error: insertErr } = await supabase
       .from("knowledge_drafts")
