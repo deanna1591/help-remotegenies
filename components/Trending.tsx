@@ -8,6 +8,11 @@ export default function Trending() {
           <h2 className="text-2xl md:text-3xl font-bold text-ink mb-2 tracking-tight">Can&apos;t find what you need?</h2>
           <p className="text-ink-muted mb-6 max-w-md mx-auto">Ask Jinni directly — she&apos;s available 24/7 and gives sourced answers. If she can&apos;t help, we&apos;ll connect you with a human.</p>
           <AskJinniButton />
+          <p className="text-sm text-ink-muted mt-4">
+            Still stuck?{" "}
+            <a href="/submit-ticket" className="text-primary font-medium hover:underline">Submit a ticket</a>{" "}
+            and our team will get back to you.
+          </p>
         </div>
       </div>
     </section>

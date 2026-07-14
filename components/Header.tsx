@@ -13,6 +13,12 @@ export default function Header() {
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
             <a
+              href="/submit-ticket"
+            className="hidden sm:inline text-sm font-medium text-primary hover:text-primary-hover transition"
+          >
+            Submit a ticket
+          </a>
+            <a
               href="https://app.remotegenies.com"
             className="hidden sm:inline text-sm text-ink-muted hover:text-ink transition"
           >

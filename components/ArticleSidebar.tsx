@@ -104,6 +104,14 @@ export default function ArticleSidebar({
           ))}
         </nav>
       )}
+
+      {/* Still need help CTA */}
+      <a
+        href="/submit-ticket"
+        className="block text-center text-sm font-medium bg-gradient-primary text-white rounded-xl px-4 py-2.5 hover:opacity-95 transition"
+      >
+        Still need help? Submit a ticket
+      </a>
     </div>
   );
 

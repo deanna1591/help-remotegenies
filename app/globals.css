@@ -25,3 +25,36 @@
     @apply block sm:table w-full overflow-x-auto;
   }
 }
+/* Style react-phone-number-input to match the form's inputs.
+   Append this to app/globals.css */
+
+.rgphone .PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.875rem;
+  transition: border-color 0.15s;
+}
+.rgphone .PhoneInput:focus-within {
+  border-color: rgba(99, 102, 241, 0.5);
+}
+.rgphone.rgphone-error .PhoneInput {
+  border-color: #f87171;
+}
+.rgphone .PhoneInputInput {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  background: transparent;
+}
+.rgphone .PhoneInputInput::placeholder {
+  color: #9ca3af;
+}
+.rgphone .PhoneInputCountrySelect {
+  font-size: 0.875rem;
+}

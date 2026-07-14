@@ -32,7 +32,7 @@ const TRENDING_QUERIES = [
   "How free credits work",
 ];
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: { ticket?: string } }) {
   const articles = await getPublishedArticles();
   const HIDDEN_CATEGORY_TAGS = new Set(["client", "genie", "internal"]);
   const allCategories = groupIntoCategories(articles).filter(
@@ -49,6 +49,13 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-radial">
       <Header />
+      {searchParams?.ticket === "success" && (
+        <div className="container-wide pt-4">
+          <div className="bg-green-50 border border-green-200 text-green-800 rounded-2xl px-5 py-4 text-sm">
+            ✓ Thanks! Your ticket has been submitted. Our team will get back to you as soon as possible.
+          </div>
+        </div>
+      )}
       <Hero />
       <Categories categories={displayCategories} totalArticles={articles.length} />
       <Trending />
