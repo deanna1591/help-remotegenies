@@ -47,11 +47,19 @@ const config: Config = {
       },
       animation: {
         "fade-up": "fadeUp 0.4s ease-out",
+        "wave": "wave 2.2s ease-in-out infinite",
       },
       keyframes: {
         fadeUp: {
           "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        wave: {
+          "0%, 60%, 100%": { transform: "rotate(0deg)" },
+          "10%, 30%": { transform: "rotate(14deg)" },
+          "20%": { transform: "rotate(-8deg)" },
+          "40%": { transform: "rotate(-4deg)" },
+          "50%": { transform: "rotate(10deg)" },
         },
       },
     },

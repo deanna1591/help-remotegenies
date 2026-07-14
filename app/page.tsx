@@ -61,12 +61,12 @@ function Hero() {
   return (
     <section className="py-12 sm:py-20 md:py-28">
       <div className="container-narrow text-center animate-fade-up">
-        <div className="inline-flex items-center gap-2 bg-primary-soft border border-primary/10 text-primary text-xs font-medium px-3 py-1 rounded-full mb-6">
+        <div className="inline-flex items-center gap-2 bg-primary-soft border border-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-full mb-6 max-w-[90%] mx-auto text-center leading-snug">
           <span className="w-1.5 h-1.5 bg-primary rounded-full" />
-          24/7 answers from Jinni, our AI assistant
+          Jinni has your back, day or night. Ask anything about RemoteGenies
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-ink mb-3 sm:mb-4 tracking-tight">How can we help?</h1>
-        <p className="text-lg text-ink-muted mb-10 max-w-xl mx-auto">Search the knowledge base or ask Jinni directly. Answers grounded in the platform, not guesswork.</p>
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-ink mb-3 sm:mb-4 tracking-tight">How can we help?<span className="inline-block animate-wave origin-[70%_80%] ml-2">👋🏼</span></h1>
+        <p className="text-base sm:text-lg text-ink-muted mb-10 max-w-2xl mx-auto">Learn how to delegate tasks, cut costs by up to 70%, and focus on growing your business — or how to thrive as a Genie on RemoteGenies.</p>
         <form action="/search" method="GET" className="max-w-2xl mx-auto">
           <div className="flex items-center gap-2 bg-white shadow-hero border border-gray-100 hover:border-primary/30 focus-within:border-primary/50 rounded-2xl p-2 transition">
             <div className="pl-3 text-ink-faint">
@@ -78,7 +78,7 @@ function Hero() {
           <div className="flex items-center justify-center flex-wrap gap-2 mt-4 text-xs text-ink-muted">
             <span>Popular:</span>
             {TRENDING_QUERIES.map((q) => (
-              <Link key={q} href={`/search?q=${encodeURIComponent(q)}`} className="hover:text-primary transition underline decoration-transparent hover:decoration-current">{q}</Link>
+              <Link key={q} href={`/search?q=${encodeURIComponent(q)}`} className="px-3 py-1 rounded-full bg-primary-soft border border-primary/10 text-primary hover:bg-primary hover:text-white transition">{q}</Link>
             ))}
           </div>
         </form>

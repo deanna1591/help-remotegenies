@@ -2,12 +2,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+
+// Articles are generated with a leading "# Title" that duplicates the page
+// header. Strip a single leading H1 (and its trailing blank line) so the title
+// only appears once. Other headings in the body are untouched.
+function stripLeadingH1(md: string): string {
+  if (!md) return md;
+  return md.replace(/^\s*#\s+.*(?:\r?\n)+/, "");
+}
 import remarkGfm from "remark-gfm";
 import { getArticleById, getPublishedArticles } from "@/lib/supabase";
 import AskJinniButton from "@/components/AskJinniButton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Trending from "@/components/Trending";
+import ArticleSidebar from "@/components/ArticleSidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -49,13 +58,16 @@ export default async function ArticlePage({ params }: { params: { id: string } }
     <div className="min-h-screen bg-gradient-radial">
       <Header />
       <section className="py-12 md:py-16">
-        <div className="container-narrow animate-fade-up">
+        <div className="container-wide animate-fade-up">
           <div className="mb-6">
             <Link href="/" className="text-sm text-primary hover:underline inline-flex items-center gap-1">
               ← Back to help center
             </Link>
           </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-[280px_minmax(0,1fr)] gap-8 items-start">
+            <ArticleSidebar articles={all} currentId={article.id} />
+            <div className="min-w-0">
          <article className="bg-white border border-gray-100 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 shadow-hero">
             <header className="mb-8 pb-8 border-b border-gray-100">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-ink tracking-tight mb-3 sm:mb-4">{article.title || "(untitled)"}</h1>
@@ -66,7 +78,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                     <span>·</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {cleanTags.slice(0, 4).map((t) => (
-                        <Link key={t} href={`/category/${t.toLowerCase()}`} className="text-xs px-2 py-0.5 bg-primary-soft text-primary rounded-md hover:opacity-80 transition">{humanize(t)}</Link>
+                        <Link key={t} href={`/category/${t.toLowerCase()}`} className="text-xs px-2.5 py-1 bg-primary text-white rounded-full hover:bg-primary-hover transition">{humanize(t)}</Link>
                       ))}
                     </div>
                   </>
@@ -86,7 +98,7 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                         href={url}
                         target={isExternal ? "_blank" : undefined}
                         rel={isExternal ? "noopener noreferrer" : undefined}
-                        className="inline-flex items-center gap-1.5 bg-gradient-primary text-white text-sm font-medium px-3.5 py-1.5 rounded-full hover:opacity-95 transition no-underline my-1"
+                        className="inline-flex items-center gap-1.5 bg-primary-soft text-primary-hover border border-primary/30 text-sm font-medium px-3.5 py-1.5 rounded-full hover:bg-primary hover:text-white hover:border-primary transition no-underline my-1"
                         {...rest}
                       >
                         <span>{children}</span>
@@ -99,10 +111,12 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                   },
                 }}
               >
-                {article.content}
+                {stripLeadingH1(article.content)}
               </ReactMarkdown>
             </div>
           </article>
+            </div>
+          </div>
 
           {related.length > 0 && (
             <section className="mt-12">
