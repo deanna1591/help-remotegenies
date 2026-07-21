@@ -96,7 +96,13 @@ export default function RootLayout({
           {`
             (function(d, w, c) {
               w.BrevoConversationsID = '5e1c75b5aec38d69bb54dbca';
-              w.BrevoConversationsSetup = w.BrevoConversationsSetup || { startHidden: true };
+              w.BrevoConversationsSetup = w.BrevoConversationsSetup || {};
+              w.BrevoConversationsSetup.startHidden = true;
+              w.BrevoConversationsSetup.onNewMessage = function(m) {
+                try {
+                  window.dispatchEvent(new CustomEvent('brevo:message', { detail: m }));
+                } catch (e) {}
+              };
               w[c] = w[c] || function() {
                 (w[c].q = w[c].q || []).push(arguments);
               };

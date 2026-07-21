@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { handoffToAgent, looksLikeHandoffRequest } from "@/lib/brevo-handoff";
+import { looksLikeHandoffRequest, hasActiveLiveChat } from "@/lib/live-chat";
+import JinniLiveChat from "@/components/JinniLiveChat";
 
 type Citation = { title: string | null; id: string; similarity: number; url: string };
 type FinalMeta = { retrieval_confidence: string; claude_confidence: string; question: string };
@@ -51,6 +52,7 @@ export default function JinniWidget() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [liveChat, setLiveChat] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -64,6 +66,9 @@ export default function JinniWidget() {
     }
     window.addEventListener("jinni:open", handleOpenEvent);
     return () => window.removeEventListener("jinni:open", handleOpenEvent);
+  }, []);
+  useEffect(() => {
+    if (hasActiveLiveChat()) setLiveChat(true);
   }, []);
   useEffect(() => {
     if (hasLoaded) saveStoredMessages(messages);
@@ -182,7 +187,7 @@ export default function JinniWidget() {
           <img src="/jinni-avatar.png" alt="Jinni" className="w-8 h-8 rounded-lg object-cover bg-white" />
             <div>
               <div className="text-sm font-semibold leading-tight">Jinni</div>
-              <div className="text-xs text-white/80 leading-tight">Ask me anything</div>
+              <div className="text-xs text-white/80 leading-tight">{liveChat ? "Live chat with our team" : "Ask me anything"}</div>
             </div>
           </div>
          <div className="flex items-center gap-1">
@@ -230,6 +235,13 @@ export default function JinniWidget() {
           </div>
         </header>
 
+        {liveChat ? (
+          <JinniLiveChat
+            transcript={messages.map((m) => ({ role: m.role, content: m.content }))}
+            defaultMessage={[...messages].reverse().find((m) => m.role === "user")?.content || ""}
+            onExit={() => setLiveChat(false)}
+          />
+        ) : (<>
         <div className="flex-1 overflow-y-auto px-4 py-4 bg-surface-wash/40">
           {messages.length === 0 ? (
             <EmptyState onQuickAsk={(q) => setInput(q)} />
@@ -241,19 +253,7 @@ export default function JinniWidget() {
                   message={m}
                   stripInternalMarkers={stripInternalMarkers}
                   onFeedbackSaved={(id, kind) => setMessages((prev) => prev.map((mm) => (mm.id === id ? { ...mm, feedback: kind, feedbackSaved: true } : mm)))}
-                  onRequestHandoff={() => {
-                    const ok = handoffToAgent({ transcript: messages.map((mm) => ({ role: mm.role, content: mm.content })) });
-                    setMessages((prev) => [
-                      ...prev,
-                      {
-                        id: crypto.randomUUID(),
-                        role: "assistant",
-                        content: ok
-                          ? "Connecting you with our team now — they'll continue right here in the chat window that just opened. If you don't see it, check the bottom-right corner of your screen."
-                          : "I couldn't open the live chat just now. Please email support@remotegenies.com and our team will help you.",
-                      },
-                    ]);
-                  }}
+                  onRequestHandoff={() => setLiveChat(true)}
                 />
               ))}
               <div ref={bottomRef} />
@@ -287,6 +287,7 @@ export default function JinniWidget() {
           </div>
           <p className="text-[10px] text-ink-faint text-center mt-2">Jinni answers from our knowledge base. Not sure? She'll flag it for our team.</p>
         </div>
+        </>)}
       </div>
     </>
   );
