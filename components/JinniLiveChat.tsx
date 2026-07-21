@@ -13,6 +13,33 @@ import {
   type LiveIdentity,
 } from "@/lib/live-chat";
 
+const URL_RE = /(https?:\/\/[^\s<>"]+)/g;
+const IMG_RE = /\.(png|jpe?g|gif|webp)(\?[^\s]*)?$/i;
+
+function RichBody({ text, light }: { text: string; light?: boolean }) {
+  const parts = text.split(URL_RE);
+  return (
+    <>
+      {parts.map((p, i) => {
+        if (!/^https?:\/\//.test(p)) return <span key={i}>{p}</span>;
+        if (IMG_RE.test(p)) {
+          return (
+            <a key={i} href={p} target="_blank" rel="noopener noreferrer" className="block my-1">
+              <img src={p} alt="attachment" className="max-h-48 max-w-full rounded-lg border border-black/10" />
+            </a>
+          );
+        }
+        return (
+          <a key={i} href={p} target="_blank" rel="noopener noreferrer"
+            className={(light ? "text-white underline" : "text-primary underline") + " break-all"}>
+            {p}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
 export default function JinniLiveChat({
   transcript,
   defaultMessage,
@@ -208,7 +235,7 @@ export default function JinniLiveChat({
             m.type === "visitor" ? (
               <div key={m.id} className="flex justify-end">
                 <div className="bg-gradient-primary text-white rounded-2xl rounded-br-md px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap">
-                  {m.text}
+                  <RichBody text={m.text} light />
                 </div>
               </div>
             ) : (
@@ -217,7 +244,7 @@ export default function JinniLiveChat({
                   {m.type === "bot" ? "Jinni assistant" : "RemoteGenies team"}
                 </span>
                 <div className="bg-white border border-gray-100 text-ink rounded-2xl rounded-bl-md px-4 py-2.5 max-w-[85%] text-sm whitespace-pre-wrap">
-                  {m.text}
+                  <RichBody text={m.text} />
                 </div>
               </div>
             )

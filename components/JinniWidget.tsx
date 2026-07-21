@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { looksLikeHandoffRequest, hasActiveLiveChat } from "@/lib/live-chat";
 import JinniLiveChat from "@/components/JinniLiveChat";
+import { SCENARIO, SCENARIO_START, type ScenarioOption } from "@/lib/scenario";
 
 type Citation = { title: string | null; id: string; similarity: number; url: string };
 type FinalMeta = { retrieval_confidence: string; claude_confidence: string; question: string };
@@ -21,6 +22,8 @@ type Message = {
   feedback?: "positive" | "negative" | null;
   feedbackSaved?: boolean;
   handoffOffer?: boolean;
+  scenarioOptions?: ScenarioOption[];
+  scenarioUsed?: boolean;
 };
 
 const STORAGE_KEY = "jinni_widget_messages_v1";
@@ -43,6 +46,16 @@ function saveStoredMessages(messages: Message[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED)));
   } catch {}
+}
+
+function scenarioMessage(stepId: string): Message {
+  const step = SCENARIO[stepId];
+  return {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    content: step ? step.bot : "",
+    scenarioOptions: step ? step.options : undefined,
+  };
 }
 
 export default function JinniWidget() {
@@ -71,6 +84,11 @@ export default function JinniWidget() {
     if (hasActiveLiveChat()) setLiveChat(true);
   }, []);
   useEffect(() => {
+    if (hasLoaded && !liveChat && messages.length === 0) {
+      setMessages([scenarioMessage(SCENARIO_START)]);
+    }
+  }, [hasLoaded, liveChat, messages.length]);
+  useEffect(() => {
     if (hasLoaded) saveStoredMessages(messages);
   }, [messages, hasLoaded]);
 
@@ -86,8 +104,28 @@ export default function JinniWidget() {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  function handleScenarioOption(messageId: string, opt: ScenarioOption) {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, scenarioUsed: true } : m)));
+    if (opt.action.type === "goto") {
+      const stepId = opt.action.step;
+      const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: opt.label };
+      setMessages((prev) => [...prev, userMsg, scenarioMessage(stepId)]);
+    } else if (opt.action.type === "handoff") {
+      const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: opt.label };
+      setMessages((prev) => [...prev, userMsg]);
+      setLiveChat(true);
+    } else if (opt.action.type === "ask") {
+      sendText(opt.action.text);
+    }
+  }
+
   async function sendMessage() {
     const trimmed = input.trim();
+    if (!trimmed || isStreaming) return;
+    await sendText(trimmed);
+  }
+
+  async function sendText(trimmed: string) {
     if (!trimmed || isStreaming) return;
 
     // Offer-first live-agent handoff: if the user asks for a human, don't call
@@ -254,6 +292,7 @@ export default function JinniWidget() {
                   stripInternalMarkers={stripInternalMarkers}
                   onFeedbackSaved={(id, kind) => setMessages((prev) => prev.map((mm) => (mm.id === id ? { ...mm, feedback: kind, feedbackSaved: true } : mm)))}
                   onRequestHandoff={() => setLiveChat(true)}
+                  onScenarioOption={(opt) => handleScenarioOption(m.id, opt)}
                 />
               ))}
               <div ref={bottomRef} />
@@ -325,11 +364,13 @@ function MessageBubble({
   stripInternalMarkers,
   onFeedbackSaved,
   onRequestHandoff,
+  onScenarioOption,
 }: {
   message: Message;
   stripInternalMarkers: (t: string) => string;
   onFeedbackSaved: (id: string, kind: "positive" | "negative") => void;
   onRequestHandoff: () => void;
+  onScenarioOption: (opt: ScenarioOption) => void;
 }) {
   const [showCorrection, setShowCorrection] = useState(false);
   const [correction, setCorrection] = useState("");
@@ -411,6 +452,20 @@ const displayContent = stripInternalMarkers(message.content);
               </svg>
               Yes, connect me with an agent
             </button>
+          </div>
+        )}
+
+        {message.scenarioOptions && !message.scenarioUsed && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {message.scenarioOptions.map((o) => (
+              <button
+                key={o.label}
+                onClick={() => onScenarioOption(o)}
+                className="text-xs font-medium px-3.5 py-2 bg-white border border-primary/30 text-primary rounded-full hover:bg-primary-soft/60 hover:border-primary/50 transition"
+              >
+                {o.label}
+              </button>
+            ))}
           </div>
         )}
 
