@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { uploadChatFile } from "@/app/chat-upload-action";
 import {
   brevoAvailable,
   startLiveIdentity,
@@ -53,6 +54,9 @@ export default function JinniLiveChat({
   const [msgs, setMsgs] = useState<LiveMessage[]>([]);
   const [input, setInput] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
 
   const [audience, setAudience] = useState<"client" | "genie">("client");
@@ -141,6 +145,29 @@ export default function JinniLiveChat({
     setIdentity(id);
     if (sendVisitorMessage(msg)) {
       appendLocalVisitor(msg);
+    }
+  }
+
+  async function handleFile(f: File | null) {
+    if (!f || uploading) return;
+    setUploading(true);
+    setChatError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", f);
+      const res = await uploadChatFile(fd);
+      if (!res.ok) {
+        setChatError(res.error);
+        return;
+      }
+      if (sendVisitorMessage(res.url)) {
+        appendLocalVisitor(res.url);
+      }
+    } catch {
+      setChatError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
   }
 
@@ -255,6 +282,28 @@ export default function JinniLiveChat({
 
       <div className="border-t border-gray-100 bg-white p-3">
         <div className="flex items-end gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            className="hidden"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
+            onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+          />
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            title="Attach a file"
+            aria-label="Attach a file"
+            className="h-10 w-10 shrink-0 rounded-xl border border-gray-200 text-ink-faint hover:border-primary/40 hover:text-primary transition flex items-center justify-center disabled:opacity-40"
+          >
+            {uploading ? (
+              <span className="text-[10px]">...</span>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+            )}
+          </button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -280,6 +329,7 @@ export default function JinniLiveChat({
             </svg>
           </button>
         </div>
+        {chatError && <p className="text-xs text-red-600 mt-1.5">{chatError}</p>}
         <button
           onClick={handleEnd}
           className="w-full text-[11px] text-ink-faint hover:text-ink mt-2"
