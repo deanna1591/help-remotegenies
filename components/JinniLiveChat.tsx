@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { uploadChatFile } from "@/app/chat-upload-action";
+import { validateChatEmail } from "@/app/validate-email-action";
 import {
   brevoAvailable,
   startLiveIdentity,
@@ -56,6 +57,8 @@ export default function JinniLiveChat({
   const [formError, setFormError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
 
@@ -123,14 +126,29 @@ export default function JinniLiveChat({
     ]);
   }
 
-  function handleStart() {
+  async function handleStart() {
     setFormError(null);
+    setEmailSuggestion(null);
     const name = fullName.trim();
     const mail = email.trim();
     const msg = firstMessage.trim();
     if (!name) return setFormError("Please enter your name.");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return setFormError("Please enter a valid email.");
     if (!msg) return setFormError("Please tell us what you need help with.");
+
+    setVerifying(true);
+    try {
+      const check = await validateChatEmail(mail);
+      if (!check.ok) {
+        setFormError(check.error);
+        if (check.suggestion) setEmailSuggestion(check.suggestion);
+        return;
+      }
+    } catch {
+      // verification service hiccup should never block a real visitor
+    } finally {
+      setVerifying(false);
+    }
+
     if (!brevoAvailable()) {
       setFormError("Live chat is still loading. Please try again in a moment, or email support@remotegenies.com.");
       return;
@@ -231,13 +249,27 @@ export default function JinniLiveChat({
           className="w-full text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 mb-2 outline-none focus:ring-2 focus:ring-primary/30 resize-none"
         />
 
-        {formError && <p className="text-xs text-red-600 mb-2">{formError}</p>}
+        {formError && (
+          <p className="text-xs text-red-600 mb-2">
+            {emailSuggestion ? (
+              <button
+                onClick={() => { setEmail(emailSuggestion); setEmailSuggestion(null); setFormError(null); }}
+                className="underline font-medium"
+              >
+                {formError}
+              </button>
+            ) : (
+              formError
+            )}
+          </p>
+        )}
 
         <button
           onClick={handleStart}
-          className="w-full bg-gradient-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:opacity-95 transition"
+          disabled={verifying}
+          className="w-full bg-gradient-primary text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:opacity-95 transition disabled:opacity-60"
         >
-          Start chat
+          {verifying ? "Checking..." : "Start chat"}
         </button>
         <button
           onClick={onExit}
