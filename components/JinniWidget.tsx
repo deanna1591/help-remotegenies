@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { handoffToAgent, looksLikeHandoffRequest } from "@/lib/brevo-handoff";
 
 type Citation = { title: string | null; id: string; similarity: number; url: string };
 type FinalMeta = { retrieval_confidence: string; claude_confidence: string; question: string };
@@ -18,6 +19,7 @@ type Message = {
   gapFlagged?: GapResult;
   feedback?: "positive" | "negative" | null;
   feedbackSaved?: boolean;
+  handoffOffer?: boolean;
 };
 
 const STORAGE_KEY = "jinni_widget_messages_v1";
@@ -82,6 +84,22 @@ export default function JinniWidget() {
   async function sendMessage() {
     const trimmed = input.trim();
     if (!trimmed || isStreaming) return;
+
+    // Offer-first live-agent handoff: if the user asks for a human, don't call
+    // the model — post a Jinni message offering to connect them, with a button.
+    if (looksLikeHandoffRequest(trimmed)) {
+      const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: trimmed };
+      const offerMsg: Message = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "I can connect you with someone from our team. Want me to do that?",
+        handoffOffer: true,
+      };
+      setMessages((prev) => [...prev, userMsg, offerMsg]);
+      setInput("");
+      return;
+    }
+
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: trimmed };
     const assistantMsg: Message = { id: crypto.randomUUID(), role: "assistant", content: "" };
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
@@ -223,6 +241,19 @@ export default function JinniWidget() {
                   message={m}
                   stripInternalMarkers={stripInternalMarkers}
                   onFeedbackSaved={(id, kind) => setMessages((prev) => prev.map((mm) => (mm.id === id ? { ...mm, feedback: kind, feedbackSaved: true } : mm)))}
+                  onRequestHandoff={() => {
+                    const ok = handoffToAgent({ transcript: messages.map((mm) => ({ role: mm.role, content: mm.content })) });
+                    setMessages((prev) => [
+                      ...prev,
+                      {
+                        id: crypto.randomUUID(),
+                        role: "assistant",
+                        content: ok
+                          ? "Connecting you with our team now — they'll continue right here in the chat window that just opened. If you don't see it, check the bottom-right corner of your screen."
+                          : "I couldn't open the live chat just now. Please email support@remotegenies.com and our team will help you.",
+                      },
+                    ]);
+                  }}
                 />
               ))}
               <div ref={bottomRef} />
@@ -292,10 +323,12 @@ function MessageBubble({
   message,
   stripInternalMarkers,
   onFeedbackSaved,
+  onRequestHandoff,
 }: {
   message: Message;
   stripInternalMarkers: (t: string) => string;
   onFeedbackSaved: (id: string, kind: "positive" | "negative") => void;
+  onRequestHandoff: () => void;
 }) {
   const [showCorrection, setShowCorrection] = useState(false);
   const [correction, setCorrection] = useState("");
@@ -365,6 +398,20 @@ const displayContent = stripInternalMarkers(message.content);
             <span className="text-ink-faint">...</span>
           )}
         </div>
+
+        {message.handoffOffer && (
+          <div className="mt-3">
+            <button
+              onClick={onRequestHandoff}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 bg-gradient-primary text-white rounded-full hover:opacity-95 transition"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              Yes, connect me with an agent
+            </button>
+          </div>
+        )}
 
        {message.citations && message.citations.filter((c) => c.similarity > 0.5).length > 0 && (
           <div className="mt-3 pt-2 border-t border-gray-100">

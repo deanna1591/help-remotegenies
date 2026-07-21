@@ -91,6 +91,22 @@ export default function RootLayout({
             gtag('config', 'G-67122HLKN5');
           `}
         </Script>
+
+<Script id="brevo-conversations" strategy="afterInteractive">
+          {`
+            (function(d, w, c) {
+              w.BrevoConversationsID = '5e1c75b5aec38d69bb54dbca';
+              w.BrevoConversationsSetup = w.BrevoConversationsSetup || { startHidden: true };
+              w[c] = w[c] || function() {
+                (w[c].q = w[c].q || []).push(arguments);
+              };
+              var s = d.createElement('script');
+              s.async = true;
+              s.src = 'https://conversations-widget.brevo.com/brevo-conversations.js';
+              if (d.head) d.head.appendChild(s);
+            })(document, window, 'BrevoConversations');
+          `}
+        </Script>
       </body>
     </html>
   );
